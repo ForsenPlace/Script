@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      10
+// @version      11
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -85,6 +85,7 @@ var canvas = document.createElement('canvas');
 	GM_addStyle(GM_getResourceText('TOASTIFY_CSS'));
 	canvas.width = 2000;
 	canvas.height = 1000;
+	canvas.style.display = 'none';
 	canvas = document.body.appendChild(canvas);
 
 	Toastify({
@@ -129,8 +130,8 @@ function updateOrders() {
 async function executeOrders() {
 	var ctx;
 	try {
-		const canvasUrl = await getCurrentImageUrl();
-		ctx = await getCanvasFromUrl(canvasUrl);
+		ctx = await getCanvasFromUrl(await getCurrentImageUrl('0'), 0, 0);
+		ctx = await getCanvasFromUrl(await getCurrentImageUrl('1'), 1000, 0);
 	} catch (e) {
 		console.warn('Error obtaining map', e);
 		Toastify({
@@ -233,7 +234,7 @@ function place(x, y, color) {
 	});
 }
 
-async function getCurrentImageUrl() {
+async function getCurrentImageUrl(tag) {
 	return new Promise((resolve, reject) => {
 		const ws = new WebSocket('wss://gql-realtime-2.reddit.com/query', 'graphql-ws');
 
@@ -253,7 +254,7 @@ async function getCurrentImageUrl() {
 							'channel': {
 								'teamOwner': 'AFD2022',
 								'category': 'CANVAS',
-								'tag': '0'
+								'tag': tag
 							}
 						}
 					},
@@ -271,20 +272,20 @@ async function getCurrentImageUrl() {
 			if (!parsed.payload || !parsed.payload.data || !parsed.payload.data.subscribe || !parsed.payload.data.subscribe.data) return;
 
 			ws.close();
-			resolve(parsed.payload.data.subscribe.data.name);
+			resolve(parsed.payload.data.subscribe.data.name + `?noCache=${Date.now() * Math.random()}`);
 		}
 
 		ws.onerror = reject;
 	});
 }
 
-function getCanvasFromUrl(url) {
+function getCanvasFromUrl(url, x, y) {
 	return new Promise((resolve, reject) => {
 		var ctx = canvas.getContext('2d');
 		var img = new Image();
 		img.crossOrigin = 'anonymous';
 		img.onload = () => {
-			ctx.drawImage(img, 0, 0);
+			ctx.drawImage(img, x, y);
 			resolve(ctx);
 		};
 		img.onerror = reject;
