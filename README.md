@@ -4,8 +4,6 @@ Forsen related script. Forsen bots, automation, cheats, extensions, total r/plac
 
 ## Instructions
 
-If you have just placed a pixel wait the 5 minutes delay before running the extension.
-
 1. Install the [Tampermonkey](https://www.tampermonkey.net) browser extension.
 2. [Click this](https://github.com/ForsenPlace/Script/raw/main/script.user.js). Tampermonkey should let you install the script. Click on **Install**.
 3. Restart your browser.
