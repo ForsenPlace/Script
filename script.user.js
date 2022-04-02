@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      5
+// @version      6
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -61,7 +61,7 @@ const INDEX_TO_NAME = {
 	'31': 'white'
 };
 
-var currentOrders = [];
+var currentOrdersByPrio = [];
 var accessToken;
 var canvas = document.createElement('canvas');
 
@@ -98,8 +98,8 @@ function updateOrders() {
 		if (!response.ok) return console.warn('Couldn\'t get orders (error response code)');
 		const newOrders = await response.json();
 
-		if (JSON.stringify(newOrders) !== JSON.stringify(currentOrders)) {
-			currentOrders = newOrders;
+		if (JSON.stringify(newOrders) !== JSON.stringify(currentOrdersByPrio)) {
+			currentOrdersByPrio = newOrders;
 			Toastify({
 				text: `Obtained new orders for a total of ${newOrders.length} pixels`,
 				duration: TOAST_DURATION
