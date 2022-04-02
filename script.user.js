@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      7
+// @version      8
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -19,7 +19,7 @@ const ORDERS_URL = 'https://raw.githubusercontent.com/ForsenPlace/Orders/main/or
 
 const ORDER_UPDATE_DELAY = 5 * 60 * 1000
 const TOAST_DURATION = 10000
-const MAP_ERROR_RETRY_DELAY = 15000
+const MAP_ERROR_RETRY_DELAY = 10000
 const PARSE_ERROR_RETRY_DELAY = 15000
 const AFTER_PAINT_DELAY = 315000
 const CHECK_AGAIN_DELAY = 30000
@@ -103,7 +103,7 @@ function updateOrders() {
 		if (JSON.stringify(newOrders) !== JSON.stringify(currentOrdersByPrio)) {
 			currentOrdersByPrio = newOrders;
 			Toastify({
-				text: `Obtained new orders for a total of ${newOrders.length} pixels`,
+				text: `Obtained new orders!`,
 				duration: TOAST_DURATION
 			}).showToast();
 		}
