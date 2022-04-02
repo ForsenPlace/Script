@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      9
+// @version      10
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -25,17 +25,25 @@ const AFTER_PAINT_DELAY = 315000
 const CHECK_AGAIN_DELAY = 30000
 
 const COLOR_TO_INDEX = {
+	'#BE0039': 1,
 	'#FF4500': 2,
 	'#FFA800': 3,
 	'#FFD635': 4,
 	'#00A368': 6,
+	'#00CC78': 7,
 	'#7EED56': 8,
+	'#00756F': 9,
+	'#009EAA': 10,
 	'#2450A4': 12,
 	'#3690EA': 13,
 	'#51E9F4': 14,
+	'#493AC1': 15,
+	'#6A5CFF': 16,
 	'#811E9F': 18,
 	'#B44AC0': 19,
+	'#FF3881': 22,
 	'#FF99AA': 23,
+	'#6D482F': 24,
 	'#9C6926': 25,
 	'#000000': 27,
 	'#898D90': 29,
@@ -43,17 +51,25 @@ const COLOR_TO_INDEX = {
 	'#FFFFFF': 31
 };
 const INDEX_TO_NAME = {
+	'1': 'dark red',
 	'2': 'red',
 	'3': 'orange',
 	'4': 'yellow',
 	'6': 'dark green',
+	'7': 'green',
 	'8': 'light green',
+	'9': 'dark teal',
+	'10': 'teal',
 	'12': 'dark blue',
 	'13': 'blue',
 	'14': 'light blue',
+	'15': 'indigo',
+	'16': 'periwinkle',
 	'18': 'dark purple',
 	'19': 'purple',
+	'22': 'pink',
 	'23': 'light pink',
+	'24': 'dark brown',
 	'25': 'brown', 
 	'27': 'black',
 	'29': 'gray',
@@ -67,7 +83,7 @@ var canvas = document.createElement('canvas');
 
 (async function () {
 	GM_addStyle(GM_getResourceText('TOASTIFY_CSS'));
-	canvas.width = 1000;
+	canvas.width = 2000;
 	canvas.height = 1000;
 	canvas = document.body.appendChild(canvas);
 
