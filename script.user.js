@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      8
+// @version      9
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -125,8 +125,10 @@ async function executeOrders() {
 		return;
 	}
 
-	for (orders of currentOrdersByPrio) {
-		for (const order of orders) {
+	for (const [prioIndex, orders] of currentOrdersByPrio.entries()) {
+		let start = Math.floor(Math.random() * orders.length);
+		for (let offset = 0; offset < orders.length; offset++) {
+			const order = orders[(start + offset) % orders.length]
 			const x = order[0];
 			const y = order[1];
 			const colorId = order[2];
@@ -138,7 +140,7 @@ async function executeOrders() {
 			if (currentColorId == colorId) continue;
 	
 			Toastify({
-				text: `Fixing wrong pixel on ${x}, ${y}. Changing from ${INDEX_TO_NAME[currentColorId]} to ${INDEX_TO_NAME[colorId]}`,
+				text: `Changing pixel on ${x}, ${y} with priority ${prioIndex + 1} from ${INDEX_TO_NAME[currentColorId]} to ${INDEX_TO_NAME[colorId]}`,
 				duration: TOAST_DURATION
 			}).showToast();
 			const res = await place(x, y, colorId);
