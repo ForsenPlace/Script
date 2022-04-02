@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      1
+// @version      2
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -20,10 +20,11 @@ const ORDERS_URL = 'https://raw.githubusercontent.com/ForsenPlace/Orders/main/or
 const ORDER_UPDATE_DELAY = 5 * 60 * 1000
 const TOAST_DURATION = 10000
 const MAP_ERROR_RETRY_DELAY = 15000
+const PARSE_ERROR_RETRY_DELAY = 15000
 const AFTER_PAINT_DELAY = 315000
 const CHECK_AGAIN_DELAY = 30000
 
-const COLOR_MAPPINGS = {
+const COLOR_TO_INDEX = {
 	'#FF4500': 2,
 	'#FFA800': 3,
 	'#FFD635': 4,
@@ -40,6 +41,24 @@ const COLOR_MAPPINGS = {
 	'#898D90': 29,
 	'#D4D7D9': 30,
 	'#FFFFFF': 31
+};
+const INDEX_TO_NAME = {
+	'2': 'red',
+	'3': 'orange',
+	'4': 'yellow',
+	'6': 'dark green',
+	'8': 'light green',
+	'12': 'dark blue',
+	'13': 'blue',
+	'14': 'light blue',
+	'18': 'dark purple',
+	'19': 'purple',
+	'23': 'light pink',
+	'25': 'brown', 
+	'27': 'black',
+	'29': 'gray',
+	'30': 'light gray',
+	'31': 'white'
 };
 
 var currentOrders = [];
@@ -98,7 +117,7 @@ async function executeOrders() {
 		console.warn('Error obtaining map', e);
 		Toastify({
 			text: 'Couldn\'t get map. Trying again in ${MAP_ERROR_RETRY_DELAY / 1000} seconds...',
-			duration: TOAST_DURATION
+			duration: MAP_ERROR_RETRY_DELAY
 		}).showToast();
 		setTimeout(executeOrders, MAP_ERROR_RETRY_DELAY);
 		return;
@@ -110,28 +129,54 @@ async function executeOrders() {
 		const colorId = order[2];
 		const rgbaAtLocation = ctx.getImageData(x, y, 1, 1).data;
 		const hex = rgbToHex(rgbaAtLocation[0], rgbaAtLocation[1], rgbaAtLocation[2]);
-		const currentColorId = COLOR_MAPPINGS[hex];
+		const currentColorId = COLOR_TO_INDEX[hex];
 
 		// If the pixel color is already correct skip
 		if (currentColorId == colorId) continue;
 
 		Toastify({
-			text: `Found wrong pixel at ${x}, ${y}!`,
+			text: 'Fixing wrong pixel on ${x}, ${y}. Changing from ${INDEX_TO_NAME[currentColorId]} to ${INDEX_TO_NAME[colorId]}',
 			duration: TOAST_DURATION
 		}).showToast();
-		await place(x, y, colorId);
+		const res = await place(x, y, colorId);
+		const data = await res.json();
 
-		Toastify({
-			text: `Waiting cooldown...`,
-			duration: AFTER_PAINT_DELAY
-		}).showToast();
-		setTimeout(executeOrders, AFTER_PAINT_DELAY);
-		return;
+		try {
+            if (data.errors) {
+                const error = data.errors[0];
+                const nextPixel = error.extensions.nextAvailablePixelTs + 3000;
+                const nextPixelDate = new Date(nextPixel);
+                const delay = nextPixelDate.getTime() - Date.now();
+                Toastify({
+                    text : 'Pixel placed too soon! Next pixel at ${ nextPixelDate.toLocaleTimeString()}',
+                    duration: delay
+                }).showToast();
+                setTimeout(attemptPlace, delay);
+            } else {
+                const nextPixel = data.data.act.data[0].data.nextAvailablePixelTimestamp + 3000;
+                const nextPixelDate = new Date(nextPixel);
+                const delay = nextPixelDate.getTime() - Date.now();
+                Toastify({
+                    text : 'Pixel placed on ${x}, ${y}! Next pixel at ${nextPixelDate.toLocaleTimeString()}',
+                    duration: delay
+                }).showToast();
+                setTimeout(attemptPlace, delay);
+            }
+        } catch (e) {
+            console.warn ('Error parsing response', e);
+            Toastify({
+                text : 'Error parsing response after placing pixel. Trying again in ${PARSE_ERROR_RETRY_DELAY / 1000} seconds...',
+                duration: PARSE_ERROR_RETRY_DELAY
+            }).showToast();
+            setTimeout(attemptPlace, PARSE_ERROR_RETRY_DELAY);
+        }
+
+        return;
 	}
 
 	Toastify({
 		text: 'Every pixel is correct! checking again in ${CHECK_AGAIN_DELAY / 1000} seconds...',
-		duration: TOAST_DURATION
+		duration: CHECK_AGAIN_DELAY
 	}).showToast();
 	setTimeout(executeOrders, CHECK_AGAIN_DELAY);
 }
