@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      2
+// @version      3
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -116,7 +116,7 @@ async function executeOrders() {
 	} catch (e) {
 		console.warn('Error obtaining map', e);
 		Toastify({
-			text: 'Couldn\'t get map. Trying again in ${MAP_ERROR_RETRY_DELAY / 1000} seconds...',
+			text: `Couldn\'t get map. Trying again in ${MAP_ERROR_RETRY_DELAY / 1000} seconds...`,
 			duration: MAP_ERROR_RETRY_DELAY
 		}).showToast();
 		setTimeout(executeOrders, MAP_ERROR_RETRY_DELAY);
@@ -135,7 +135,7 @@ async function executeOrders() {
 		if (currentColorId == colorId) continue;
 
 		Toastify({
-			text: 'Fixing wrong pixel on ${x}, ${y}. Changing from ${INDEX_TO_NAME[currentColorId]} to ${INDEX_TO_NAME[colorId]}',
+			text: `Fixing wrong pixel on ${x}, ${y}. Changing from ${INDEX_TO_NAME[currentColorId]} to ${INDEX_TO_NAME[colorId]}`,
 			duration: TOAST_DURATION
 		}).showToast();
 		const res = await place(x, y, colorId);
@@ -148,7 +148,7 @@ async function executeOrders() {
                 const nextPixelDate = new Date(nextPixel);
                 const delay = nextPixelDate.getTime() - Date.now();
                 Toastify({
-                    text : 'Pixel placed too soon! Next pixel at ${ nextPixelDate.toLocaleTimeString()}',
+                    text : `Pixel placed too soon! Next pixel at ${ nextPixelDate.toLocaleTimeString()}`,
                     duration: delay
                 }).showToast();
                 setTimeout(attemptPlace, delay);
@@ -157,7 +157,7 @@ async function executeOrders() {
                 const nextPixelDate = new Date(nextPixel);
                 const delay = nextPixelDate.getTime() - Date.now();
                 Toastify({
-                    text : 'Pixel placed on ${x}, ${y}! Next pixel at ${nextPixelDate.toLocaleTimeString()}',
+                    text : `Pixel placed on ${x}, ${y}! Next pixel at ${nextPixelDate.toLocaleTimeString()}`,
                     duration: delay
                 }).showToast();
                 setTimeout(attemptPlace, delay);
@@ -165,7 +165,7 @@ async function executeOrders() {
         } catch (e) {
             console.warn ('Error parsing response', e);
             Toastify({
-                text : 'Error parsing response after placing pixel. Trying again in ${PARSE_ERROR_RETRY_DELAY / 1000} seconds...',
+                text : `Error parsing response after placing pixel. Trying again in ${PARSE_ERROR_RETRY_DELAY / 1000} seconds...`,
                 duration: PARSE_ERROR_RETRY_DELAY
             }).showToast();
             setTimeout(attemptPlace, PARSE_ERROR_RETRY_DELAY);
@@ -175,7 +175,7 @@ async function executeOrders() {
 	}
 
 	Toastify({
-		text: 'Every pixel is correct! checking again in ${CHECK_AGAIN_DELAY / 1000} seconds...',
+		text: `Every pixel is correct! checking again in ${CHECK_AGAIN_DELAY / 1000} seconds...`,
 		duration: CHECK_AGAIN_DELAY
 	}).showToast();
 	setTimeout(executeOrders, CHECK_AGAIN_DELAY);
