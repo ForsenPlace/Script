@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      3
+// @version      4
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -151,7 +151,7 @@ async function executeOrders() {
                     text : `Pixel placed too soon! Next pixel at ${ nextPixelDate.toLocaleTimeString()}`,
                     duration: delay
                 }).showToast();
-                setTimeout(attemptPlace, delay);
+                setTimeout(executeOrders, delay);
             } else {
                 const nextPixel = data.data.act.data[0].data.nextAvailablePixelTimestamp + 3000;
                 const nextPixelDate = new Date(nextPixel);
@@ -160,7 +160,7 @@ async function executeOrders() {
                     text : `Pixel placed on ${x}, ${y}! Next pixel at ${nextPixelDate.toLocaleTimeString()}`,
                     duration: delay
                 }).showToast();
-                setTimeout(attemptPlace, delay);
+                setTimeout(executeOrders, delay);
             }
         } catch (e) {
             console.warn ('Error parsing response', e);
@@ -168,7 +168,7 @@ async function executeOrders() {
                 text : `Error parsing response after placing pixel. Trying again in ${PARSE_ERROR_RETRY_DELAY / 1000} seconds...`,
                 duration: PARSE_ERROR_RETRY_DELAY
             }).showToast();
-            setTimeout(attemptPlace, PARSE_ERROR_RETRY_DELAY);
+            setTimeout(executeOrders, PARSE_ERROR_RETRY_DELAY);
         }
 
         return;
