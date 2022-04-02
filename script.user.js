@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      6
+// @version      7
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -87,8 +87,10 @@ var canvas = document.createElement('canvas');
 })();
 
 async function getAccessToken() {
-	const response = await fetch('https://new.reddit.com/r/place/');
-	const responseText = await response.text();
+	const usingOldReddit = window.location.href.includes('new.reddit.com');
+    const url = usingOldReddit ? 'https://new.reddit.com/r/place/' : 'https://www.reddit.com/r/place/';
+    const response = await fetch(url);
+    const responseText = await response.text();
 
 	return responseText.split('\"accessToken\":\"')[1].split('"')[0];
 }
