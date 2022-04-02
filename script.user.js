@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      4
+// @version      5
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -123,55 +123,57 @@ async function executeOrders() {
 		return;
 	}
 
-	for (const order of currentOrders) {
-		const x = order[0];
-		const y = order[1];
-		const colorId = order[2];
-		const rgbaAtLocation = ctx.getImageData(x, y, 1, 1).data;
-		const hex = rgbToHex(rgbaAtLocation[0], rgbaAtLocation[1], rgbaAtLocation[2]);
-		const currentColorId = COLOR_TO_INDEX[hex];
-
-		// If the pixel color is already correct skip
-		if (currentColorId == colorId) continue;
-
-		Toastify({
-			text: `Fixing wrong pixel on ${x}, ${y}. Changing from ${INDEX_TO_NAME[currentColorId]} to ${INDEX_TO_NAME[colorId]}`,
-			duration: TOAST_DURATION
-		}).showToast();
-		const res = await place(x, y, colorId);
-		const data = await res.json();
-
-		try {
-            if (data.errors) {
-                const error = data.errors[0];
-                const nextPixel = error.extensions.nextAvailablePixelTs + 3000;
-                const nextPixelDate = new Date(nextPixel);
-                const delay = nextPixelDate.getTime() - Date.now();
-                Toastify({
-                    text : `Pixel placed too soon! Next pixel at ${ nextPixelDate.toLocaleTimeString()}`,
-                    duration: delay
-                }).showToast();
-                setTimeout(executeOrders, delay);
-            } else {
-                const nextPixel = data.data.act.data[0].data.nextAvailablePixelTimestamp + 3000;
-                const nextPixelDate = new Date(nextPixel);
-                const delay = nextPixelDate.getTime() - Date.now();
-                Toastify({
-                    text : `Pixel placed on ${x}, ${y}! Next pixel at ${nextPixelDate.toLocaleTimeString()}`,
-                    duration: delay
-                }).showToast();
-                setTimeout(executeOrders, delay);
-            }
-        } catch (e) {
-            console.warn ('Error parsing response', e);
-            Toastify({
-                text : `Error parsing response after placing pixel. Trying again in ${PARSE_ERROR_RETRY_DELAY / 1000} seconds...`,
-                duration: PARSE_ERROR_RETRY_DELAY
-            }).showToast();
-            setTimeout(executeOrders, PARSE_ERROR_RETRY_DELAY);
-        }
-
-        return;
+	for (orders of currentOrdersByPrio) {
+		for (const order of orders) {
+			const x = order[0];
+			const y = order[1];
+			const colorId = order[2];
+			const rgbaAtLocation = ctx.getImageData(x, y, 1, 1).data;
+			const hex = rgbToHex(rgbaAtLocation[0], rgbaAtLocation[1], rgbaAtLocation[2]);
+			const currentColorId = COLOR_TO_INDEX[hex];
+	
+			// If the pixel color is already correct skip
+			if (currentColorId == colorId) continue;
+	
+			Toastify({
+				text: `Fixing wrong pixel on ${x}, ${y}. Changing from ${INDEX_TO_NAME[currentColorId]} to ${INDEX_TO_NAME[colorId]}`,
+				duration: TOAST_DURATION
+			}).showToast();
+			const res = await place(x, y, colorId);
+			const data = await res.json();
+	
+			try {
+				if (data.errors) {
+					const error = data.errors[0];
+					const nextPixel = error.extensions.nextAvailablePixelTs + 3000;
+					const nextPixelDate = new Date(nextPixel);
+					const delay = nextPixelDate.getTime() - Date.now();
+					Toastify({
+						text : `Too early to place pixel! Next pixel at ${ nextPixelDate.toLocaleTimeString()}`,
+						duration: delay
+					}).showToast();
+					setTimeout(executeOrders, delay);
+				} else {
+					const nextPixel = data.data.act.data[0].data.nextAvailablePixelTimestamp + 3000;
+					const nextPixelDate = new Date(nextPixel);
+					const delay = nextPixelDate.getTime() - Date.now();
+					Toastify({
+						text : `Pixel placed on ${x}, ${y}! Next pixel at ${nextPixelDate.toLocaleTimeString()}`,
+						duration: delay
+					}).showToast();
+					setTimeout(executeOrders, delay);
+				}
+			} catch (e) {
+				console.warn ('Error parsing response', e);
+				Toastify({
+					text : `Error parsing response after placing pixel. Trying again in ${PARSE_ERROR_RETRY_DELAY / 1000} seconds...`,
+					duration: PARSE_ERROR_RETRY_DELAY
+				}).showToast();
+				setTimeout(executeOrders, PARSE_ERROR_RETRY_DELAY);
+			}
+	
+			return;
+		}
 	}
 
 	Toastify({
