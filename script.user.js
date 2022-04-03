@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      12
+// @version      13
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -18,11 +18,12 @@
 const ORDERS_URL = 'https://raw.githubusercontent.com/ForsenPlace/Orders/main/orders.json'
 
 const ORDER_UPDATE_DELAY = 4 * 60 * 1000
-const TOAST_DURATION = 10000
-const MAP_ERROR_RETRY_DELAY = 6000
-const PARSE_ERROR_REFRESH_DELAY = 10000
-const AFTER_PAINT_DELAY = 315000
-const CHECK_AGAIN_DELAY = 30000
+const TOAST_DURATION = 10 * 1000
+const MAP_ERROR_RETRY_DELAY = 6 * 1000
+const PARSE_ERROR_REFRESH_DELAY = 10 * 1000
+const AFTER_PAINT_DELAY = 5.25 * 60 * 1000
+const CHECK_AGAIN_DELAY = 30 * 1000
+const REFRESH_TOKEN_DELAY = 30 * 60 * 1000
 
 const COLOR_TO_INDEX = {
 	'#BE0039': 1,
@@ -88,6 +89,7 @@ var canvas = document.createElement('canvas');
 	canvas.style.display = 'none';
 	canvas = document.body.appendChild(canvas);
 
+	// Get the token
 	Toastify({
 		text: 'Obtaining access token...',
 		duration: TOAST_DURATION
@@ -98,9 +100,25 @@ var canvas = document.createElement('canvas');
 		duration: TOAST_DURATION
 	}).showToast();
 
-	setInterval(updateOrders, ORDER_UPDATE_DELAY);
+	// Start working
 	await updateOrders();
 	executeOrders();
+
+	// Periodically refresh the orders
+	setInterval(updateOrders, ORDER_UPDATE_DELAY);
+
+	// Periodically refresh the token
+	setInterval(async () => {
+		Toastify({
+			text: 'Refreshing access token...',
+			duration: TOAST_DURATION
+		}).showToast();
+        accessToken = await getAccessToken();
+		Toastify({
+			text: 'Refreshed access token!',
+			duration: TOAST_DURATION
+		}).showToast();
+    }, REFRESH_TOKEN_DELAY)
 })();
 
 async function getAccessToken() {
