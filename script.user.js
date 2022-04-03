@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      11
+// @version      12
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -17,10 +17,10 @@
 
 const ORDERS_URL = 'https://raw.githubusercontent.com/ForsenPlace/Orders/main/orders.json'
 
-const ORDER_UPDATE_DELAY = 5 * 60 * 1000
+const ORDER_UPDATE_DELAY = 4 * 60 * 1000
 const TOAST_DURATION = 10000
-const MAP_ERROR_RETRY_DELAY = 10000
-const PARSE_ERROR_RETRY_DELAY = 15000
+const MAP_ERROR_RETRY_DELAY = 6000
+const PARSE_ERROR_REFRESH_DELAY = 10000
 const AFTER_PAINT_DELAY = 315000
 const CHECK_AGAIN_DELAY = 30000
 
@@ -185,12 +185,15 @@ async function executeOrders() {
 					setTimeout(executeOrders, delay);
 				}
 			} catch (e) {
+				// The token probably expired, refresh and hope for the best
 				console.warn ('Error parsing response', e);
 				Toastify({
-					text : `Error parsing response after placing pixel. Trying again in ${PARSE_ERROR_RETRY_DELAY / 1000} seconds...`,
-					duration: PARSE_ERROR_RETRY_DELAY
+					text : `Error parsing response after placing pixel. Refreshing the page in ${PARSE_ERROR_REFRESH_DELAY / 1000} seconds...`,
+					duration: PARSE_ERROR_REFRESH_DELAY
 				}).showToast();
-				setTimeout(executeOrders, PARSE_ERROR_RETRY_DELAY);
+				setTimeout(() => {
+					window.location.reload();
+				}, PARSE_ERROR_REFRESH_DELAY);
 			}
 	
 			return;
