@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      15
+// @version      16
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -255,11 +255,11 @@ function place(x, y, color) {
 					'actionName': 'r/replace:set_pixel',
 					'PixelMessageData': {
 						'coordinate': {
-							'x': x,
-							'y': y
+							'x': x % 1000,
+							'y': y % 1000
 						},
 						'colorIndex': color,
-						'canvasIndex': 0
+						'canvasIndex': getCanvasIndex(x, y)
 					}
 				}
 			},
@@ -273,6 +273,14 @@ function place(x, y, color) {
 			'Content-Type': 'application/json'
 		}
 	});
+}
+
+function getCanvasIndex(x, y) {
+    if (x <= 999) {
+        return y <= 999 ? 0 : 2;
+    } else {
+        return y <= 999 ? 1 : 3;
+    }
 }
 
 async function getCurrentImageUrl(tag) {
