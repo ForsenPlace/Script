@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ForsenPlace Script
 // @namespace    https://github.com/ForsenPlace/Script
-// @version      14
+// @version      15
 // @description  Script 
 // @author       ForsenPlace
 // @match        https://www.reddit.com/r/place/*
@@ -13,6 +13,8 @@
 // @downloadURL  https://github.com/ForsenPlace/Script/main/script.user.js
 // @grant        GM_getResourceText
 // @grant        GM_addStyle
+// @grant GM.xmlHttpRequest
+// @connect reddit.com
 // ==/UserScript==
 
 const ORDERS_URL = 'https://raw.githubusercontent.com/ForsenPlace/Orders/main/orders.json'
@@ -321,14 +323,21 @@ async function getCurrentImageUrl(tag) {
 function getCanvasFromUrl(url, x, y) {
 	return new Promise((resolve, reject) => {
 		var ctx = canvas.getContext('2d');
-		var img = new Image();
-		img.crossOrigin = 'anonymous';
-		img.onload = () => {
-			ctx.drawImage(img, x, y);
-			resolve(ctx);
-		};
-		img.onerror = reject;
-		img.src = url;
+		GM.xmlHttpRequest({
+			method: "GET",
+			url: url,
+			responseType: 'blob',
+			onload: function(response) {
+				var urlCreator = window.URL || window.webkitURL;
+				var imageUrl = urlCreator.createObjectURL(this.response);
+				var img = new Image();
+				img.onload = () => {
+					ctx.drawImage(img, x, y);
+					resolve(ctx);
+				};
+			img.src = imageUrl;
+			}
+		});
 	});
 }
 
